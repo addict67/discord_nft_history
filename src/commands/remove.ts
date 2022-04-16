@@ -26,7 +26,7 @@ export default class Remove implements Command {
 
     async execute(interaction: CommandInteraction): Promise<void> {
         await interaction.deferReply();
-        const addressStr = interaction.options.getString('address');
+        const addressStr = interaction.options.getString('address').toLowerCase();
 
         if (!StringUtils.isETHAddress(addressStr)) {
             await interaction.editReply({

@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { oneLine, oneLineTrim } from 'common-tags';
 import { TextChannel } from 'discord.js';
 import { NFTTransactionEmbed, TxData } from '../embeds/nft_transaction_embed';
+import { add } from 'winston';
 
 export class NFTListenerManager {
     private readonly _etherScanToken: string;
@@ -43,7 +44,7 @@ export class NFTListenerManager {
         const value = address.value;
         const url = oneLineTrim`
             https://api.etherscan.io/api?module=account&action=tokennfttx
-            &address=${value}&page=1&offset=20&sort=desc&apikey=${this._etherScanToken}
+            &address=${value}&page=1&offset=50&sort=desc&apikey=${this._etherScanToken}
         `;
         const res = await fetch(url);
         const json = await res.json();
@@ -68,7 +69,7 @@ export class NFTListenerManager {
             const txTimestamp = parseInt(tx.timeStamp);
             if (txTimestamp > lastTimestamp && tx.to === value) {
                 await this.newNFTTransaction(address, tx);
-                this._lastAddressTimestamp.set(value, tx.timestamp);
+                this._lastAddressTimestamp.set(value, txTimestamp);
             }
         }
     }
