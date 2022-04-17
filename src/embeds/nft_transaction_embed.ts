@@ -1,6 +1,5 @@
 import { DefaultEmbed } from './default_embed';
 import { Address } from '../entities/address';
-import { GuildMember, User } from 'discord.js';
 
 export interface TxData {
     contractAddress: string;

@@ -1,10 +1,10 @@
 import { BotClient } from '../core/client';
 import { Address } from '../entities/address';
 import fetch from 'node-fetch';
-import { oneLine, oneLineTrim } from 'common-tags';
+import { oneLineTrim } from 'common-tags';
 import { TextChannel } from 'discord.js';
 import { NFTTransactionEmbed, TxData } from '../embeds/nft_transaction_embed';
-import { add } from 'winston';
+import { logger } from '../core/logger';
 
 export class NFTListenerManager {
     private readonly _etherScanToken: string;
@@ -37,7 +37,7 @@ export class NFTListenerManager {
             await this.checkAddressTxs(this._addressList[this._index]);
             this._index += 1;
         }
-        setTimeout(() => this.loop(), 200);
+        setTimeout(() => this.loop(), 250);
     }
 
     async checkAddressTxs(address: Address): Promise<void> {
@@ -46,8 +46,17 @@ export class NFTListenerManager {
             https://api.etherscan.io/api?module=account&action=tokennfttx
             &address=${value}&page=1&offset=50&sort=desc&apikey=${this._etherScanToken}
         `;
-        const res = await fetch(url);
-        const json = await res.json();
+        let res, json;
+        try {
+            res = await fetch(url);
+            json = await res.json();
+        } catch (e) {
+            logger.log({
+                level: 'error',
+                message: e,
+            });
+            return;
+        }
         let history = json.result.sort((previous, next) => {
             const preTimestamp = parseInt(previous.timeStamp);
             const nextTimestamp = parseInt(next.timeStamp);
