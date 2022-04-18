@@ -84,6 +84,7 @@ export class NFTListenerManager {
             contractAddress: tx.contractAddress,
             collectionName: tx.tokenName,
             amount: tx.amount,
+            tokenId: tx.tokenID,
         };
 
         const collectionSlug = await this.getCollectionSlug(tx.contractAddress);
@@ -137,6 +138,22 @@ export class NFTListenerManager {
             data.collectionImage = json.collection.large_image_url;
             data.collectionName = json.collection.name;
             data.collectionUrl = `https://opensea.io/collection/${collectionSlug}`;
+            data.assetImageUrl = await this.getAssetImageUrl(data.contractAddress, data.tokenId);
         }
+    }
+
+    private async getAssetImageUrl(contractAddress: string, tokenId: string): Promise<string> {
+        const url = `https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}`;
+
+        const res = await fetch(url, {
+            headers: {
+                'X-API-KEY': this._openSeaToken,
+            },
+        });
+        if (res.status === 200) {
+            const json = await res.json();
+            return json.image_url;
+        }
+        return '';
     }
 }

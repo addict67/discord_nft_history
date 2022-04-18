@@ -5,9 +5,11 @@ export interface CollectionData {
     contractAddress: string;
     collectionName: string;
     amount: number;
+    tokenId: string;
     collectionImage?: string;
     floorPrice?: number;
     collectionUrl?: string;
+    assetImageUrl?: string;
 }
 
 export class NFTTransactionEmbed extends DefaultEmbed {
@@ -17,6 +19,7 @@ export class NFTTransactionEmbed extends DefaultEmbed {
         const floorPrice = data.floorPrice === undefined ? '?' : data.floorPrice.toString();
         const collection = data.collectionUrl ? `[${data.collectionName}](${data.collectionUrl})` : data.collectionName;
         this.setThumbnail(data.collectionImage);
+        this.setImage(data.assetImageUrl);
         this.setFields([{
             name: 'Address',
             value: address.value,
