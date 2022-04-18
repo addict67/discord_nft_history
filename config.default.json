@@ -1,6 +1,7 @@
 {
   "discordToken": "<DISCORD-TOKEN>",
   "etherScanToken": "<ETHERSCAN-TOKEN>",
+  "openSeaToken": "<OPENSEA-TOKEN>",
   "clientId": "<CLIENT-ID>",
   "guildId": "<GUILD-ID>",
   "channelId": "<CHANNEL-ID>"

@@ -1,18 +1,21 @@
 import { DefaultEmbed } from './default_embed';
 import { Address } from '../entities/address';
 
-export interface TxData {
+export interface CollectionData {
     contractAddress: string;
-    collection: string;
-    floorPrice: number | null;
+    collectionName: string;
     amount: number;
+    collectionImage?: string;
+    floorPrice?: number;
+    collectionUrl?: string;
 }
 
 export class NFTTransactionEmbed extends DefaultEmbed {
-    constructor(address: Address, data: TxData) {
+    constructor(address: Address, data: CollectionData) {
         super();
         this.setTitle('🎉 Congrats');
-        const floorPrice = data.floorPrice === null ? '?' : data.floorPrice.toString();
+        const floorPrice = data.floorPrice === undefined ? '?' : data.floorPrice.toString();
+        const collection = data.collectionUrl ? `[${data.collectionName}](${data.collectionUrl})` : data.collectionName;
         this.setFields([{
             name: 'Address',
             value: address.value,
@@ -27,7 +30,7 @@ export class NFTTransactionEmbed extends DefaultEmbed {
             inline: false,
         }, {
             name: 'Collection',
-            value: data.collection,
+            value: collection,
             inline: true,
         }, {
             name: 'Amount',

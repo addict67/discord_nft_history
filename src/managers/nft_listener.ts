@@ -3,11 +3,12 @@ import { Address } from '../entities/address';
 import fetch from 'node-fetch';
 import { oneLineTrim } from 'common-tags';
 import { TextChannel } from 'discord.js';
-import { NFTTransactionEmbed, TxData } from '../embeds/nft_transaction_embed';
+import { NFTTransactionEmbed, CollectionData } from '../embeds/nft_transaction_embed';
 import { logger } from '../core/logger';
 
 export class NFTListenerManager {
     private readonly _etherScanToken: string;
+    private readonly _openSeaToken: string;
     private readonly _lastAddressTimestamp: Map<string, number>;
     private _addressList: Address[];
     private _channel: TextChannel;
@@ -15,6 +16,7 @@ export class NFTListenerManager {
 
     constructor(private readonly _client: BotClient) {
         this._etherScanToken = _client.config.etherScanToken;
+        this._openSeaToken = _client.config.openSeaToken;
         this._lastAddressTimestamp = new Map<string, number>();
         this._index = 0;
     }
@@ -42,21 +44,15 @@ export class NFTListenerManager {
 
     async checkAddressTxs(address: Address): Promise<void> {
         const value = address.value;
+
         const url = oneLineTrim`
             https://api.etherscan.io/api?module=account&action=tokennfttx
             &address=${value}&page=1&offset=50&sort=desc&apikey=${this._etherScanToken}
         `;
-        let res, json;
-        try {
-            res = await fetch(url);
-            json = await res.json();
-        } catch (e) {
-            logger.log({
-                level: 'error',
-                message: e,
-            });
-            return;
-        }
+        const res = await fetch(url);
+        if (res.status !== 200) return;
+        const json = await res.json();
+
         let history = json.result.sort((previous, next) => {
             const preTimestamp = parseInt(previous.timeStamp);
             const nextTimestamp = parseInt(next.timeStamp);
@@ -84,12 +80,17 @@ export class NFTListenerManager {
     }
 
     async newNFTTransaction(address: Address, tx: any): Promise<void> {
-        const data: TxData = {
+        const data: CollectionData = {
             contractAddress: tx.contractAddress,
-            collection: tx.tokenName,
-            floorPrice: null,
+            collectionName: tx.tokenName,
             amount: tx.amount,
         };
+
+        const collectionSlug = await this.getCollectionSlug(tx.contractAddress);
+        if (collectionSlug) {
+            await this.getCollectionData(collectionSlug, data);
+        }
+
         await this._channel.send({
             content: `<@${address.creatorId}>`,
             embeds: [new NFTTransactionEmbed(address, data)],
@@ -105,5 +106,37 @@ export class NFTListenerManager {
         const index = this._addressList.findIndex(value => value.id === address.id);
         this._addressList.splice(index, 1);
         this._lastAddressTimestamp.delete(address.value);
+    }
+
+    private async getCollectionSlug(contractAddress: string): Promise<string | null> {
+        const url = `https://api.opensea.io/api/v1/asset_contract/${contractAddress}`;
+
+        const res = await fetch(url, {
+            headers: {
+                'X-API-KEY': this._openSeaToken,
+            },
+        });
+        if (res.status === 200) {
+            const json = await res.json();
+            return json.collection.slug;
+        }
+        return null;
+    }
+
+    private async getCollectionData(collectionSlug: string, data: CollectionData): Promise<void> {
+        const url = `https://api.opensea.io/api/v1/collection/${collectionSlug}`;
+
+        const res = await fetch(url, {
+            headers: {
+                'X-API-KEY': this._openSeaToken,
+            },
+        });
+        if (res.status === 200) {
+            const json = await res.json();
+            data.floorPrice = json.collection.stats.floor_price;
+            data.collectionImage = json.collection.large_image_url;
+            data.collectionName = json.collection.name;
+            data.collectionUrl = `https://opensea.io/collection/${collectionSlug}`;
+        }
     }
 }
