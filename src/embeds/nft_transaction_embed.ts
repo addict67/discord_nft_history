@@ -16,6 +16,7 @@ export class NFTTransactionEmbed extends DefaultEmbed {
         this.setTitle('🎉 Congrats');
         const floorPrice = data.floorPrice === undefined ? '?' : data.floorPrice.toString();
         const collection = data.collectionUrl ? `[${data.collectionName}](${data.collectionUrl})` : data.collectionName;
+        this.setThumbnail(data.collectionImage);
         this.setFields([{
             name: 'Address',
             value: address.value,
