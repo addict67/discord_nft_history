@@ -49,9 +49,18 @@ export class NFTListenerManager {
             https://api.etherscan.io/api?module=account&action=tokennfttx
             &address=${value}&page=1&offset=50&sort=desc&apikey=${this._etherScanToken}
         `;
-        const res = await fetch(url);
-        if (res.status !== 200) return;
-        const json = await res.json();
+        let res, json;
+        try {
+            res = await fetch(url);
+            if (res.status !== 200) return;
+            json = await res.json();
+        } catch (e) {
+            logger.log({
+                level: 'error',
+                message: e,
+            });
+            return;
+        }
 
         let history = json.result.sort((previous, next) => {
             const preTimestamp = parseInt(previous.timeStamp);
@@ -112,14 +121,21 @@ export class NFTListenerManager {
     private async getCollectionSlug(contractAddress: string): Promise<string | null> {
         const url = `https://api.opensea.io/api/v1/asset_contract/${contractAddress}`;
 
-        const res = await fetch(url, {
-            headers: {
-                'X-API-KEY': this._openSeaToken,
-            },
-        });
-        if (res.status === 200) {
-            const json = await res.json();
-            return json.collection.slug;
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    'X-API-KEY': this._openSeaToken,
+                },
+            });
+            if (res.status === 200) {
+                const json = await res.json();
+                return json.collection.slug;
+            }
+        } catch (e) {
+            logger.log({
+                level: 'error',
+                message: e,
+            });
         }
         return null;
     }
@@ -127,32 +143,46 @@ export class NFTListenerManager {
     private async getCollectionData(collectionSlug: string, data: CollectionData): Promise<void> {
         const url = `https://api.opensea.io/api/v1/collection/${collectionSlug}`;
 
-        const res = await fetch(url, {
-            headers: {
-                'X-API-KEY': this._openSeaToken,
-            },
-        });
-        if (res.status === 200) {
-            const json = await res.json();
-            data.floorPrice = json.collection.stats.floor_price;
-            data.collectionImage = json.collection.large_image_url;
-            data.collectionName = json.collection.name;
-            data.collectionUrl = `https://opensea.io/collection/${collectionSlug}`;
-            data.assetImageUrl = await this.getAssetImageUrl(data.contractAddress, data.tokenId);
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    'X-API-KEY': this._openSeaToken,
+                },
+            });
+            if (res.status === 200) {
+                const json = await res.json();
+                data.floorPrice = json.collection.stats.floor_price;
+                data.collectionImage = json.collection.large_image_url;
+                data.collectionName = json.collection.name;
+                data.collectionUrl = `https://opensea.io/collection/${collectionSlug}`;
+                data.assetImageUrl = await this.getAssetImageUrl(data.contractAddress, data.tokenId);
+            }
+        } catch (e) {
+            logger.log({
+                level: 'error',
+                message: e,
+            });
         }
     }
 
     private async getAssetImageUrl(contractAddress: string, tokenId: string): Promise<string> {
         const url = `https://api.opensea.io/api/v1/asset/${contractAddress}/${tokenId}`;
 
-        const res = await fetch(url, {
-            headers: {
-                'X-API-KEY': this._openSeaToken,
-            },
-        });
-        if (res.status === 200) {
-            const json = await res.json();
-            return json.image_url;
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    'X-API-KEY': this._openSeaToken,
+                },
+            });
+            if (res.status === 200) {
+                const json = await res.json();
+                return json.image_url;
+            }
+        } catch (e) {
+            logger.log({
+                level: 'error',
+                message: e,
+            });
         }
         return '';
     }
