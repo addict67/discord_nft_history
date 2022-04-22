@@ -8,8 +8,9 @@ export class ListAddressEmbed extends DefaultEmbed {
         let description = '';
         if (addressList?.length) {
             for (const address of addressList) {
-                const {value, creatorId} = address;
-                description += `<@${creatorId}> - **${value}**\n`;
+                const { nickname, value, creatorId} = address;
+                const text = nickname ? `**${nickname}** (${value})` : `**${value}**`;
+                description += `<@${creatorId}> - ${text}\n`;
             }
         } else {
             description = '**No registered addresses**';

@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 interface AddressAttributes {
     value: string;
+    nickname?: string;
     creatorId: string;
 }
 
@@ -13,6 +14,9 @@ export class Address extends BaseEntity implements AddressAttributes  {
 
     @Column({ nullable: false })
     value: string;
+
+    @Column({ nullable: true })
+    nickname?: string;
 
     @Column({ nullable: false })
     creatorId: string;

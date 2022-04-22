@@ -17,7 +17,7 @@ export class AddAddressEmbed extends DefaultEmbed {
             inline: true,
         }, {
             name: 'Address',
-            value: address.value,
+            value: address.nickname ? `**${address.nickname}** (${address.value})` : address.value,
             inline: true,
         }]);
     }

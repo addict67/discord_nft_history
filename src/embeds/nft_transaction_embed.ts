@@ -1,5 +1,6 @@
 import { DefaultEmbed } from './default_embed';
 import { Address } from '../entities/address';
+import { add } from 'winston';
 
 export interface CollectionData {
     contractAddress: string;
@@ -22,7 +23,7 @@ export class NFTTransactionEmbed extends DefaultEmbed {
         this.setImage(data.assetImageUrl);
         this.setFields([{
             name: 'Address',
-            value: address.value,
+            value: address.nickname ?? address.value,
             inline: true,
         }, {
             name: 'Contract',

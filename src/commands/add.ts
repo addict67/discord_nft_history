@@ -20,6 +20,9 @@ export default class Add implements Command {
             .setDescription('Adds a new address to the pool !')
             .addStringOption(option =>
                 option.setRequired(true).setName('address').setDescription('The wallet address')
+            )
+            .addStringOption(option =>
+                option.setRequired(false).setName('nickname').setDescription('The wallet nickname')
             ) as SlashCommandBuilder;
         this._config = _client?.config;
     }
@@ -27,6 +30,7 @@ export default class Add implements Command {
     async execute(interaction: CommandInteraction): Promise<void> {
         await interaction.deferReply();
         const addressStr = interaction.options.getString('address').toLowerCase();
+        const nickname = interaction.options.getString('nickname') ?? undefined;
 
         if (!StringUtils.isETHAddress(addressStr)) {
             await interaction.editReply({
@@ -44,6 +48,7 @@ export default class Add implements Command {
             let address = new Address({
                 value: addressStr,
                 creatorId: interaction.user.id,
+                nickname,
             });
             try {
                 address = await address.save();
