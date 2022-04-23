@@ -26,6 +26,7 @@ export class Address extends BaseEntity implements AddressAttributes  {
         if (attributes) {
             this.value = attributes.value;
             this.creatorId = attributes.creatorId;
+            this.nickname = attributes.nickname;
         }
     }
 

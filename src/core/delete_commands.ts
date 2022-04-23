@@ -11,7 +11,7 @@ function destroy(client: Client): never {
 
 (async () => {
     const config = require(resolve(__dirname, '../../config.json')) as Config;
-    const client = new Client({ intents: ['GUILDS', 'GUILD_PRESENCES', 'GUILD_MEMBERS'] });
+    const client = new Client({ intents: ['GUILDS'] });
 
     client.once('ready', async () => {
         const guild = await client.guilds.fetch(config.guildId);
